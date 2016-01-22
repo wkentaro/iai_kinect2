@@ -20,18 +20,54 @@
   <arg name="edge_aware_filter" default="true"/>
   <arg name="worker_threads"    default="4"/>
   <arg name="machine"           default="localhost" />
-  <arg name="nodelet_manager"   default="$(arg base_name)" />
-  <arg name="start_manager"     default="true" />
   <arg name="use_machine"       default="true" />
 
   <machine name="localhost" address="localhost" if="$(arg use_machine)"/>
 
-  <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager)" args="manager"
-        if="$(arg start_manager)" machine="$(arg machine)" output="screen"/>
-
-  <node pkg="nodelet" type="nodelet" name="$(arg base_name)_bridge" machine="$(arg machine)"
-        args="load kinect2_bridge/kinect2_bridge_nodelet $(arg nodelet_manager)"
-        respawn="true" output="screen">
+  <node name="$(arg base_name)"
+        pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+        respawn="true" output="screen"
+        machine="$(arg machine)">
+    <rosparam subst_value="true">
+      nodelets:
+        - name: $(arg base_name)_bridge
+          type: kinect2_bridge/kinect2_bridge_nodelet
+        - name: $(arg base_name)_points_xyzrgb_sd
+          type: depth_image_proc/point_cloud_xyzrgb
+          remappings:
+            - from: rgb/camera_info
+              to: $(arg base_name)/sd/camera_info
+            - from: rgb/image_rect_color
+              to: $(arg base_name)/sd/image_color_rect
+            - from: depth_registered/image_rect
+              to: $(arg base_name)/sd/image_depth_rect
+            - from: depth_registered/points
+              to: $(arg base_name)/sd/points
+        - name: $(arg base_name)_points_xyzrgb_qhd
+          type: depth_image_proc/point_cloud_xyzrgb
+          remappings:
+            - from: rgb/camera_info
+              to: $(arg base_name)/qhd/camera_info
+            - from: rgb/image_rect_color
+              to: $(arg base_name)/qhd/image_color_rect
+            - from: depth_registered/image_rect
+              to: $(arg base_name)/qhd/image_depth_rect
+            - from: depth_registered/points
+              to: $(arg base_name)/qhd/points
+        - name: $(arg base_name)_points_xyzrgb_hd
+          type: depth_image_proc/point_cloud_xyzrgb
+          remappings:
+            - from: rgb/camera_info
+              to: $(arg base_name)/hd/camera_info
+            - from: rgb/image_rect_color
+              to: $(arg base_name)/hd/image_color_rect
+            - from: depth_registered/image_rect
+              to: $(arg base_name)/hd/image_depth_rect
+            - from: depth_registered/points
+              to: $(arg base_name)/hd/points
+    </rosparam>
+  </node>
+  <group ns="$(arg base_name)_bridge">
     <param name="base_name"         type="str"    value="$(arg base_name)"/>
     <param name="sensor"            type="str"    value="$(arg sensor)"/>
     <param name="publish_tf"        type="bool"   value="$(arg publish_tf)"/>
@@ -51,35 +87,18 @@
     <param name="bilateral_filter"  type="bool"   value="$(arg bilateral_filter)"/>
     <param name="edge_aware_filter" type="bool"   value="$(arg edge_aware_filter)"/>
     <param name="worker_threads"    type="int"    value="$(arg worker_threads)"/>
-  </node>
-
+  </group>
   <!-- sd point cloud (512 x 424) -->
-  <node pkg="nodelet" type="nodelet" name="$(arg base_name)_points_xyzrgb_sd" machine="$(arg machine)"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="true">
-    <remap from="rgb/camera_info"             to="$(arg base_name)/sd/camera_info" />
-    <remap from="rgb/image_rect_color"        to="$(arg base_name)/sd/image_color_rect" />
-    <remap from="depth_registered/image_rect" to="$(arg base_name)/sd/image_depth_rect" />
-    <remap from="depth_registered/points"     to="$(arg base_name)/sd/points" />
+  <group ns="$(arg base_name)_points_xyzrgb_sd">
     <param name="queue_size" type="int" value="$(arg queue_size)" />
-  </node>
-
+  </group>
   <!-- qhd point cloud (960 x 540) -->
-  <node pkg="nodelet" type="nodelet" name="$(arg base_name)_points_xyzrgb_qhd" machine="$(arg machine)"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="true">
-    <remap from="rgb/camera_info"             to="$(arg base_name)/qhd/camera_info" />
-    <remap from="rgb/image_rect_color"        to="$(arg base_name)/qhd/image_color_rect" />
-    <remap from="depth_registered/image_rect" to="$(arg base_name)/qhd/image_depth_rect" />
-    <remap from="depth_registered/points"     to="$(arg base_name)/qhd/points" />
+  <group ns="$(arg base_name)_points_xyzrgb_qhd">
     <param name="queue_size" type="int" value="$(arg queue_size)" />
-  </node>
-
+  </group>
   <!-- hd point cloud (1920 x 1080) -->
-  <node pkg="nodelet" type="nodelet" name="$(arg base_name)_points_xyzrgb_hd" machine="$(arg machine)"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="true">
-    <remap from="rgb/camera_info"             to="$(arg base_name)/hd/camera_info" />
-    <remap from="rgb/image_rect_color"        to="$(arg base_name)/hd/image_color_rect" />
-    <remap from="depth_registered/image_rect" to="$(arg base_name)/hd/image_depth_rect" />
-    <remap from="depth_registered/points"     to="$(arg base_name)/hd/points" />
+  <group ns="$(arg base_name)_points_xyzrgb_hd">
     <param name="queue_size" type="int" value="$(arg queue_size)" />
-  </node>
+  </group>
+
 </launch>

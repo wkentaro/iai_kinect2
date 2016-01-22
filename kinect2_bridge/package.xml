@@ -29,6 +29,7 @@
   <run_depend>kinect2_registration</run_depend>
   <run_depend>nodelet</run_depend>
   <run_depend>cv_bridge</run_depend><!-- Depend on cv_bridge instead of libopencv-dev to support ROS Hydro.-->
+  <run_depend>jsk_topic_tools</run_depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />
