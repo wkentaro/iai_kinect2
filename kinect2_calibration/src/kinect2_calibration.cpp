@@ -331,6 +331,7 @@ private:
         pointsColor = this->pointsColor;
         pointsIr = this->pointsIr;
         update = false;
+        save = true;
         lock.unlock();
 
         if(mode == COLOR || mode == SYNC)
